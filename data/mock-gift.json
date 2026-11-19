@@ -1,0 +1,46 @@
+{
+  "orderId": "9701090345282028477",
+  "endTime": "2027-08-06 18:20:00",
+  "sxStationName": null,
+  "physicalCardOrderDetails": [
+    {
+      "itemTitle": "53度贵州茅台酒15年陈酿500ml",
+      "quantity": "6",
+      "unitPrice": 4110
+    }
+  ],
+  "merchantInfos": [
+    {
+      "id": "mock-yulin-changxing",
+      "shopName": "榆林长兴路店",
+      "tel": "0912-3851188",
+      "address": "榆林市榆阳区长兴路6号（陕北矿业大楼对面）",
+      "latitude": 38.2852,
+      "longitude": 109.745
+    },
+    {
+      "id": "mock-xa-jinshuiwan",
+      "shopName": "西安雁塔区提货点",
+      "tel": "18509120290",
+      "address": "陕西省西安市雁塔区金水湾5幢商铺 中国茶叶 | 提货点",
+      "latitude": 34.2038,
+      "longitude": 108.9576
+    },
+    {
+      "id": "mock-xa-cien",
+      "shopName": "西安雁塔区提货点",
+      "tel": "18509120580",
+      "address": "陕西省西安市雁塔区慈恩东路10号（中国茶叶名酒专卖 | 提货点）",
+      "latitude": 34.2189,
+      "longitude": 108.9642
+    },
+    {
+      "id": "mock-xa-hanguang",
+      "shopName": "西安雁塔区配送点",
+      "tel": "15353885981",
+      "address": "陕西省西安市雁塔区含光路南段5号（188配送酒库）",
+      "latitude": 34.2051,
+      "longitude": 108.9283
+    }
+  ]
+}

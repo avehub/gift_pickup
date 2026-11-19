@@ -1,0 +1,17 @@
+# 放在 /etc/nginx/conf.d/gift-pickup.conf。
+# 证书可用 certbot 申请后把 listen 改为 443 ssl，并补 ssl_certificate 配置。
+server {
+    listen 80;
+    server_name gift.example.com www.gift.example.com;
+
+    # 应用已设置 CSP、nosniff、Referrer-Policy、X-Frame-Options。
+    location / {
+        proxy_pass http://127.0.0.1:9001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 30s;
+    }
+}

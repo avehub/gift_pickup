@@ -1,0 +1,65 @@
+name: gift-pickup
+
+services:
+  gift:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${IMAGE_TAG:-gift-pickup:local}
+    container_name: ${CONTAINER_NAME:-gift-pickup}
+    restart: unless-stopped
+    init: true
+    environment:
+      PORT: "3000"
+      UPSTREAM_BASES: ${UPSTREAM_BASES:-https://mm.qfmjh.cn}
+      UPSTREAM_TIMEOUT_MS: ${UPSTREAM_TIMEOUT_MS:-10000}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
+      DOMAINS: ${DOMAINS:-}
+      MAP_REFERER: ${MAP_REFERER:-188}
+      STORE_CONFIG_FILE: /app/config/stores.json
+      MOCK: ${MOCK:-0}
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${HOST_PORT:-9001}:3000"
+    volumes:
+      - ./config:/app/config:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+  caddy:
+    profiles:
+      - tls
+    image: caddy:2-alpine
+    container_name: ${CADDY_CONTAINER_NAME:-gift-pickup-caddy}
+    restart: unless-stopped
+    depends_on:
+      gift:
+        condition: service_healthy
+    environment:
+      DOMAINS: ${DOMAINS:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

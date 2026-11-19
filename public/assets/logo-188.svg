@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-label="壹捌捌">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7dc9a"/>
+      <stop offset="0.45" stop-color="#dfb25c"/>
+      <stop offset="1" stop-color="#b77f2c"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="64" height="64" rx="12" fill="none" stroke="url(#gold)" stroke-width="3"/>
+  <rect x="9.5" y="9.5" width="53" height="53" rx="8" fill="none" stroke="url(#gold)" stroke-width="1.2" opacity="0.9"/>
+  <path d="M14 59.5H58" stroke="url(#gold)" stroke-width="1.2" opacity="0.8"/>
+  <text x="36" y="49" text-anchor="middle" font-family="'Songti SC','STSong','SimSun',serif" font-size="40" font-weight="700" fill="url(#gold)">壹</text>
+</svg>

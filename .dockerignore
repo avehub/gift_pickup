@@ -1,0 +1,15 @@
+.git
+.gitignore
+.chrome-profile
+node_modules
+npm-debug.log*
+test
+coverage
+screenshots
+.memsearch
+*.md
+.env
+.env.*
+!.env.example
+config/stores.json
+deploy

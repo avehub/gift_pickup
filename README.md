@@ -1,6 +1,6 @@
 # 礼品提货 H5
 
-壹捌捌名酒汇「礼品提货」移动端页面：按订单号展示礼品与可提货门店，浏览器定位后按距离由近到远排序，并支持腾讯地图导航。
+壹捌捌名酒汇「礼品提货」移动端页面：按订单号展示礼品与可提货门店，浏览器定位后按距离由近到远排序；点击门店地址在当前页面打开腾讯地图，并默认定位到该门店。
 
 - 零依赖 Node.js 22 服务 + 原生 HTML/CSS/ES Module，无需前端构建。
 - 同源代理上游订单接口，避免浏览器 CORS；用户坐标只在前端计算，不上传。
@@ -13,13 +13,19 @@
 docker compose up -d --build
 ```
 
-默认映射到本机 `127.0.0.1:9001`。打开：
+默认映射到本机 `127.0.0.1:9001`。`MOCK=1` 时直接打开根路径即可看到默认礼品，不会提示缺少订单号：
 
 ```text
-http://127.0.0.1:9001/?orderId=9701090345282028477&mock=1
+http://127.0.0.1:9001/
 ```
 
-`mock=1` 使用内置 4 家门店演示数据，正好对应设计稿；真实订单去掉 `mock=1` 即可。
+真实订单通过 `orderId` 进入（`mock=1` 可配合订单号用于演示）：
+
+```text
+http://127.0.0.1:9001/?orderId=9701090345282028477
+```
+
+内置演示订单的默认礼品为 `53度贵州茅台酒15年陈酿500ml`、数量 `x6`。默认 `config/stores.json` 使用 `replace` 模式，只展示设计稿给定的 4 家门店。`MOCK=0` 的生产环境访问根路径仍会提示缺少提货订单号。
 
 查看状态：
 
@@ -66,11 +72,30 @@ cp .env.example .env
 
 ### 门店配置
 
+项目自带 `config/stores.json`，默认使用 `replace` 模式，只展示设计稿给定的 4 家门店：
+
+```json
+{
+  "mode": "replace",
+  "add": [
+    {
+      "name": "榆林长兴路店",
+      "phone": "0912-3851188",
+      "address": "榆林市榆阳区长兴路6号（陕北矿业大楼对面）",
+      "lat": 38.2852,
+      "lng": 109.745
+    }
+  ]
+}
+```
+
+编辑 `config/stores.json` 后无需重启，下一次请求自动生效。`config/stores.example.json` 是同样结构的模板：
+
 ```bash
 cp config/stores.example.json config/stores.json
 ```
 
-编辑 `config/stores.json` 后无需重启，下一次请求自动生效：
+完整规则示例：
 
 ```json
 {
@@ -96,7 +121,7 @@ cp config/stores.example.json config/stores.json
 }
 ```
 
-- `mode`: `merge`（默认，在上游门店基础上修改）或 `replace`（只返回 `add` 列表）。
+- `mode`: `replace`（默认文件所用，只返回 `add` 列表）或 `merge`（在上游门店基础上修改）。
 - `hide`: 按上游门店 `id` 或完整店名隐藏。
 - `overrides[].match`: 按 `id` 或完整店名匹配；可改 `name`、`phone`、`address`、`lat`、`lng`。
 - `add`: 新门店；`name` 必填，`id` 可选（默认 `custom-N`），坐标可选。
@@ -146,6 +171,13 @@ proxy_pass http://127.0.0.1:9001;
 - 距离展示：`<1km` 显示米，`1–10km` 一位小数，`>10km` 整数。
 - 定位需要安全上下文：`localhost` / `127.0.0.1` 或 HTTPS。用 `http://局域网IP:9001` 访问时浏览器会禁止定位，页面会提示改用 HTTPS。
 - 用户坐标不会发送到后端，也不会写入日志。
+
+## 手机与微信
+
+- 页面按 320–430px 移动端宽度适配，已处理底部安全区、点击延迟、横向溢出和窄屏字号。
+- 微信内置浏览器要求 HTTPS 才会弹出定位授权；请用域名 + Caddy/Nginx HTTPS 访问，并在手机系统里允许微信使用定位。
+- 手机通过局域网调试时，可在 `.env` 设置 `BIND_ADDR=0.0.0.0`；HTTP 局域网地址只能查看布局，无法定位。
+- 门店卡点击会尝试打开腾讯地图；微信内若阻止新窗口，会退化为当前窗口跳转。
 
 ## API
 
@@ -210,9 +242,10 @@ src/config.js             环境变量与配置
 src/normalize.js          上游订单 → 前端订单
 src/stores.js             门店增删改规则与热加载
 src/upstream.js           上游 POST、故障转移、超时
-public/                   页面、样式、前端模块、SVG 资产
+public/                   页面、样式、前端模块、图片资产
 data/mock-gift.json       演示订单（4 家门店）
-config/stores.example.json 门店配置示例
+config/stores.json        默认门店配置（replace，4 家设计门店）
+config/stores.example.json 门店配置模板
 test/                     node:test 测试
 deploy/                   Caddy / Nginx 示例
 Dockerfile                node:22-alpine，非 root，健康检查

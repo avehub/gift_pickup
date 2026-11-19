@@ -15,32 +15,32 @@
       "shopName": "榆林长兴路店",
       "tel": "0912-3851188",
       "address": "榆林市榆阳区长兴路6号（陕北矿业大楼对面）",
-      "latitude": 38.2852,
-      "longitude": 109.745
+      "latitude": 38.247573,
+      "longitude": 109.760302
     },
     {
       "id": "mock-xa-jinshuiwan",
       "shopName": "西安雁塔区提货点",
       "tel": "18509120290",
       "address": "陕西省西安市雁塔区金水湾5幢商铺 中国茶叶 | 提货点",
-      "latitude": 34.2038,
-      "longitude": 108.9576
+      "latitude": 34.195798,
+      "longitude": 108.993097
     },
     {
       "id": "mock-xa-cien",
       "shopName": "西安雁塔区提货点",
       "tel": "18509120580",
       "address": "陕西省西安市雁塔区慈恩东路10号（中国茶叶名酒专卖 | 提货点）",
-      "latitude": 34.2189,
-      "longitude": 108.9642
+      "latitude": 34.209481,
+      "longitude": 108.96626
     },
     {
       "id": "mock-xa-hanguang",
       "shopName": "西安雁塔区配送点",
       "tel": "15353885981",
       "address": "陕西省西安市雁塔区含光路南段5号（188配送酒库）",
-      "latitude": 34.2051,
-      "longitude": 108.9283
+      "latitude": 34.209005,
+      "longitude": 108.931993
     }
   ]
 }

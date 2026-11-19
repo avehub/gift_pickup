@@ -1,4 +1,5 @@
 import {
+  buildMapUrl,
   formatDistance,
   parseDebugCoordinates,
   requestBrowserPosition,
@@ -81,7 +82,16 @@ const state = {
   requestToken: 0,
 };
 
-const ERROR_STATES = new Set(['denied', 'timeout', 'unsupported', 'insecure', 'off', 'granted', 'debug']);
+const ERROR_STATES = new Set([
+  'denied',
+  'timeout',
+  'unavailable',
+  'unsupported',
+  'insecure',
+  'off',
+  'granted',
+  'debug',
+]);
 
 function setBusy(busy) {
   els.main.setAttribute('aria-busy', String(busy));
@@ -199,19 +209,8 @@ function createPhoneLink(phone) {
 }
 
 function openMap(store) {
-  const referer = encodeURIComponent(mapReferer);
-  const name = store.name || '提货门店';
-
-  let url;
-  if (Number.isFinite(store.lat) && Number.isFinite(store.lng)) {
-    const marker = `coord:${store.lat},${store.lng};title:${encodeURIComponent(name)};addr:${encodeURIComponent(store.address || '')}`;
-    url = `https://apis.map.qq.com/uri/v1/marker?marker=${marker}&referer=${referer}`;
-  } else {
-    const keyword = encodeURIComponent([name, store.address].filter(Boolean).join(' '));
-    url = `https://apis.map.qq.com/uri/v1/search?keyword=${keyword}&referer=${referer}`;
-  }
-
-  window.open(url, '_blank', 'noopener,noreferrer');
+  // 需求：点击门店后在当前页面直接打开地图，不再新开标签页。
+  window.location.href = buildMapUrl(store, { referer: mapReferer });
 }
 
 function createStoreCard(store) {
@@ -310,7 +309,7 @@ function updateLocationStatus() {
 
   switch (state.locationState) {
     case 'locating':
-      text = '正在获取位置，按距离排序…';
+      text = '正在获取位置，请允许定位…';
       className = 'is-locating';
       break;
     case 'granted':
@@ -334,6 +333,11 @@ function updateLocationStatus() {
       className = 'is-warn';
       retry = true;
       break;
+    case 'unavailable':
+      text = '无法获取位置，门店按默认顺序展示';
+      className = 'is-warn';
+      retry = true;
+      break;
     case 'unsupported':
       text = '当前浏览器不支持定位，门店按默认顺序展示';
       className = 'is-warn';
@@ -353,11 +357,13 @@ function updateLocationStatus() {
 }
 
 async function locate() {
+  if (state.locationState === 'locating') return;
+
   state.locationState = 'locating';
   updateLocationStatus();
 
   try {
-    const position = await requestBrowserPosition({ timeout: 8000 });
+    const position = await requestBrowserPosition({ timeout: 12000 });
     if (!Number.isFinite(position.lat) || !Number.isFinite(position.lng)) {
       throw new Error('invalid position');
     }
@@ -365,15 +371,15 @@ async function locate() {
     state.locationState = 'granted';
   } catch (error) {
     state.origin = null;
-    state.locationState = error?.code === 3 ? 'timeout' : 'denied';
+    if (error?.code === 3) state.locationState = 'timeout';
+    else if (error?.code === 1) state.locationState = 'denied';
+    else state.locationState = 'unavailable';
   }
 
   renderStores();
 }
 
 function startLocation() {
-  if (!state.order) return;
-
   const debug = parseDebugCoordinates(window.location.search);
   if (debug) {
     state.origin = debug;
@@ -414,8 +420,19 @@ function startLocation() {
   locate();
 }
 
+const hasOrderId = /^\d{10,25}$/.test(orderId);
+const prefersMock = wantsMock || !hasOrderId;
+
+function showMissingOrderId() {
+  showError(
+    '缺少提货订单号',
+    '请通过完整的礼品提货链接进入，或联系门店客服获取正确链接。',
+    { retry: false },
+  );
+}
+
 async function loadOrder() {
-  if (!/^\d{10,25}$/.test(orderId)) {
+  if (orderId && !hasOrderId) {
     showApiError('INVALID_ORDER_ID');
     return;
   }
@@ -424,8 +441,10 @@ async function loadOrder() {
   showLoading();
 
   try {
-    const query = new URLSearchParams({ orderId });
-    if (wantsMock) query.set('mock', '1');
+    const query = new URLSearchParams();
+    if (hasOrderId) query.set('orderId', orderId);
+    // 无订单号时展示默认礼品（仅当服务端开启 MOCK 演示数据）。
+    if (prefersMock) query.set('mock', '1');
 
     const response = await fetch(`/api/gift?${query.toString()}`, {
       headers: { Accept: 'application/json' },
@@ -436,13 +455,16 @@ async function loadOrder() {
     if (token !== state.requestToken) return;
 
     if (!response.ok || !payload || payload.ok !== true || !payload.order) {
+      if (!hasOrderId && payload?.code === 'MOCK_DISABLED') {
+        showMissingOrderId();
+        return;
+      }
       showApiError(payload?.code || 'DEFAULT');
       return;
     }
 
     state.order = payload.order;
     renderOrder();
-    startLocation();
   } catch {
     if (token !== state.requestToken) return;
     showApiError('NETWORK_ERROR');
@@ -452,12 +474,5 @@ async function loadOrder() {
 els.retry.addEventListener('click', loadOrder);
 els.relocate.addEventListener('click', locate);
 
-if (!orderId) {
-  showError(
-    '缺少提货订单号',
-    '请通过完整的礼品提货链接进入，或联系门店客服获取正确链接。',
-    { retry: false },
-  );
-} else {
-  loadOrder();
-}
+startLocation();
+loadOrder();

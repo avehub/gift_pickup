@@ -82,6 +82,12 @@ export async function loadMockData(root) {
   return JSON.parse(raw);
 }
 
+export async function loadDefaultGift(root) {
+  const file = path.join(root, 'data', 'default-gift.json');
+  const raw = await fs.readFile(file, 'utf8');
+  return JSON.parse(raw);
+}
+
 async function serveStatic(req, res, { config, logger }) {
   let pathname;
   try {
@@ -144,7 +150,11 @@ async function serveStatic(req, res, { config, logger }) {
   }
 }
 
-async function handleGift(req, res, { config, loadStores, mockData, fetchImpl, logger }) {
+async function handleGift(
+  req,
+  res,
+  { config, loadStores, mockData, defaultGift, fetchImpl, logger },
+) {
   const url = new URL(req.url || '/', 'http://localhost');
   const orderId = String(url.searchParams.get('orderId') ?? '').trim();
   const wantsMock = url.searchParams.get('mock') === '1';
@@ -152,7 +162,14 @@ async function handleGift(req, res, { config, loadStores, mockData, fetchImpl, l
   let data;
   let responseOrderId = orderId;
 
-  if (wantsMock) {
+  if (!orderId) {
+    // 主链接不需要订单号，直接展示默认礼品（30/50/80 年陈年茅台）。
+    data = defaultGift || mockData;
+    if (!data) {
+      sendApiError(res, 500, 'DEFAULT_GIFT_UNAVAILABLE', '默认礼品数据不可用');
+      return;
+    }
+  } else if (wantsMock) {
     if (!config.mockEnabled) {
       sendApiError(res, 400, 'MOCK_DISABLED', '演示数据未开启');
       return;
@@ -205,6 +222,7 @@ export function createRequestHandler({
   config,
   loadStores,
   mockData = null,
+  defaultGift = null,
   fetchImpl = globalThis.fetch,
   logger = console,
 }) {
@@ -237,7 +255,14 @@ export function createRequestHandler({
           sendApiError(res, 405, 'METHOD_NOT_ALLOWED', '仅支持 GET 请求');
           return;
         }
-        await handleGift(req, res, { config, loadStores, mockData, fetchImpl, logger });
+        await handleGift(req, res, {
+          config,
+          loadStores,
+          mockData,
+          defaultGift,
+          fetchImpl,
+          logger,
+        });
         return;
       }
 
@@ -284,8 +309,15 @@ async function start() {
     logger.warn?.(`[mock] 未能加载演示数据：${error.message}`);
   }
 
+  let defaultGift = null;
+  try {
+    defaultGift = await loadDefaultGift(config.root);
+  } catch (error) {
+    logger.warn?.(`[default-gift] 未能加载默认礼品：${error.message}`);
+  }
+
   const loadStores = createStoreConfigLoader(config.storeConfigFile, { logger });
-  const server = createServer({ config, loadStores, mockData, logger });
+  const server = createServer({ config, loadStores, mockData, defaultGift, logger });
 
   server.on('error', (error) => {
     logger.error?.(`[server] 启动失败：${error.message}`);

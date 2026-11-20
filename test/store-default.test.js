@@ -13,13 +13,23 @@ test('默认门店配置只展示设计稿给定的四家门店', () => {
   assert.equal(config.add.length, 4);
 
   const stores = applyStoreConfig([], config);
+  // 页面自上而下的展示顺序即 config/stores.json 中 add 的顺序。
+  assert.deepEqual(
+    stores.map((store) => store.id),
+    [
+      'design-yulin-changxing',
+      'design-xa-hanguang',
+      'design-xa-cien',
+      'design-xa-jinshuiwan',
+    ],
+  );
   assert.deepEqual(
     stores.map((store) => store.name),
     [
       '榆林长兴路店',
-      '西安雁塔区提货点',
-      '西安雁塔区提货点',
       '西安雁塔区配送点',
+      '西安雁塔区提货点',
+      '西安雁塔区提货点',
     ],
   );
   for (const store of stores) {

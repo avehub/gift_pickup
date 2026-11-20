@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 
-import { createServer, loadMockData } from '../server.js';
+import { createServer, loadDefaultGift, loadMockData } from '../server.js';
 import { loadConfig } from '../src/config.js';
 import { EMPTY_STORE_CONFIG, parseStoreConfig } from '../src/stores.js';
 
@@ -28,6 +28,7 @@ async function closeServer(server) {
 async function startApp({
   env = {},
   mockData = null,
+  defaultGift = null,
   loadStores = async () => EMPTY_STORE_CONFIG,
   fetchImpl,
 } = {}) {
@@ -36,6 +37,7 @@ async function startApp({
     config,
     loadStores,
     mockData,
+    defaultGift,
     fetchImpl,
     logger: silentLogger,
   });
@@ -113,13 +115,53 @@ test('mock 接口返回订单并应用门店配置', async () => {
   });
 
   try {
-    const result = await request(base, '/api/gift?mock=1');
+    const result = await request(base, '/api/gift?orderId=9701090345282028477&mock=1');
     assert.equal(result.response.status, 200);
     assert.equal(result.json.ok, true);
     assert.equal(result.json.order.items[0].title, '53度贵州茅台酒15年陈酿500ml');
     assert.equal(result.json.order.items[0].quantity, '6');
     assert.equal(result.json.order.stores.length, 3);
     assert.equal(result.json.order.stores[0].id === firstId, false);
+  } finally {
+    await closeServer(server);
+  }
+});
+
+test('无订单号主链接返回默认四款茅台礼品', async () => {
+  const config = loadConfig({});
+  const defaultGift = await loadDefaultGift(config.root);
+  const firstId = String(defaultGift.merchantInfos[0].id);
+  const storeConfig = parseStoreConfig({ hide: [firstId] });
+
+  const { server, base } = await startApp({
+    env: { MOCK: '0' },
+    defaultGift,
+    loadStores: async () => storeConfig,
+  });
+
+  try {
+    const result = await request(base, '/api/gift');
+    assert.equal(result.response.status, 200);
+    assert.equal(result.json.ok, true);
+    assert.deepEqual(
+      result.json.order.items.map((item) => item.title),
+      [
+        '53度贵州茅台酒15年陈酿500ml',
+        '53度贵州茅台酒30年陈年500ml',
+        '53度贵州茅台酒50年陈年500ml',
+        '52度贵州茅台酒80年陈年500ml',
+      ],
+    );
+    assert.deepEqual(
+      result.json.order.items.map((item) => item.quantity),
+      ['6', '', '', ''],
+    );
+    assert.equal(result.json.order.stores.length, 3);
+    assert.equal(result.json.order.stores[0].id === firstId, false);
+
+    const withMockFlag = await request(base, '/api/gift?mock=1');
+    assert.equal(withMockFlag.response.status, 200);
+    assert.equal(withMockFlag.json.order.items.length, 4);
   } finally {
     await closeServer(server);
   }

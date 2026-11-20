@@ -1,10 +1,4 @@
-import {
-  buildMapUrl,
-  formatDistance,
-  parseDebugCoordinates,
-  requestBrowserPosition,
-  sortStoresByDistance,
-} from './geo.js';
+import { buildMapUrl } from './map.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -17,9 +11,6 @@ const els = {
   storesSection: $('stores-section'),
   storeList: $('store-list'),
   storeSkeleton: $('store-skeleton'),
-  locationStatus: $('location-status'),
-  locationText: $('location-text'),
-  relocate: $('relocate'),
   errorState: $('error-state'),
   errorTitle: $('error-title'),
   errorDetail: $('error-detail'),
@@ -77,21 +68,8 @@ const ERROR_COPY = {
 
 const state = {
   order: null,
-  origin: null,
-  locationState: 'idle',
   requestToken: 0,
 };
-
-const ERROR_STATES = new Set([
-  'denied',
-  'timeout',
-  'unavailable',
-  'unsupported',
-  'insecure',
-  'off',
-  'granted',
-  'debug',
-]);
 
 function setBusy(busy) {
   els.main.setAttribute('aria-busy', String(busy));
@@ -112,8 +90,6 @@ function showLoading() {
   els.storesSection.hidden = false;
   els.storeSkeleton.hidden = false;
   els.storeList.replaceChildren();
-  els.locationStatus.hidden = true;
-  els.locationStatus.className = 'location-status';
 }
 
 function showError(title, detail, { retry = true } = {}) {
@@ -130,12 +106,6 @@ function showError(title, detail, { retry = true } = {}) {
 function showApiError(code) {
   const [title, detail, retry] = ERROR_COPY[code] || ERROR_COPY.DEFAULT;
   showError(title, detail, { retry });
-}
-
-function isSecureLocationContext() {
-  if (window.isSecureContext) return true;
-  if (window.location.protocol === 'https:') return true;
-  return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 }
 
 function renderOrder() {
@@ -157,6 +127,7 @@ function renderOrder() {
     for (const item of items) {
       const row = createElement('div', 'gift-item');
 
+      const figure = createElement('div', 'gift-figure');
       const thumb = createElement('div', 'gift-thumb');
       const image = document.createElement('img');
       image.src = '/assets/gift-thumb.png';
@@ -164,6 +135,12 @@ function renderOrder() {
       image.height = 62;
       image.alt = '';
       thumb.append(image);
+      figure.append(thumb);
+
+      const year = /(\d{1,3}年)/.exec(item.title || '');
+      if (year) {
+        figure.append(createElement('span', 'gift-year', year[1]));
+      }
 
       const copy = createElement('div', 'gift-copy');
       copy.append(createElement('div', 'gift-name', item.title || '礼品'));
@@ -173,7 +150,7 @@ function renderOrder() {
         copy.append(createElement('div', 'gift-qty', `x${quantity}`));
       }
 
-      row.append(thumb, copy);
+      row.append(figure, copy);
       els.giftItems.append(row);
     }
   }
@@ -246,15 +223,6 @@ function createStoreCard(store) {
   const head = createElement('div', 'store-head');
   head.append(createElement('h3', 'store-name', store.name || '提货门店'));
 
-  if (Number.isFinite(store.distanceKm)) {
-    const distance = createElement(
-      'span',
-      'store-distance',
-      formatDistance(store.distanceKm),
-    );
-    head.append(distance);
-  }
-
   main.append(head);
 
   if (store.phone) {
@@ -272,164 +240,22 @@ function createStoreCard(store) {
 function renderStores() {
   if (!state.order) return;
 
+  // 展示顺序由服务端下发（config/stores.json 的 add 顺序）决定，不再按定位距离排序。
   const stores = Array.isArray(state.order.stores) ? state.order.stores : [];
-  const sorted = sortStoresByDistance(stores, state.origin);
 
   els.storeList.replaceChildren();
-  if (sorted.length === 0) {
+  if (stores.length === 0) {
     els.storeList.append(
       createElement('p', 'empty-stores', '暂无可提货门店，请联系门店客服确认提货方式。'),
     );
   } else {
-    for (const store of sorted) {
+    for (const store of stores) {
       els.storeList.append(createStoreCard(store));
     }
   }
-
-  updateLocationStatus();
-}
-
-function updateLocationStatus() {
-  const hasStores = Boolean(state.order && state.order.stores && state.order.stores.length);
-  if (!hasStores) {
-    els.locationStatus.hidden = true;
-    return;
-  }
-
-  // 成功或用户主动关闭定位时不额外占一行；距离徽标和警告已足够表达状态。
-  if (['granted', 'debug', 'off'].includes(state.locationState)) {
-    els.locationStatus.hidden = true;
-    els.relocate.hidden = true;
-    return;
-  }
-
-  let text = '门店按默认顺序展示';
-  let className = '';
-  let retry = false;
-
-  switch (state.locationState) {
-    case 'locating':
-      text = '正在获取位置，请允许定位…';
-      className = 'is-locating';
-      break;
-    case 'granted':
-      text = '已按距离由近到远排序';
-      className = 'is-done';
-      break;
-    case 'debug':
-      text = '已按调试坐标由近到远排序';
-      className = 'is-done';
-      break;
-    case 'off':
-      text = '已关闭定位，门店按默认顺序展示';
-      break;
-    case 'denied':
-      text = '未开启定位，门店按默认顺序展示';
-      className = 'is-warn';
-      retry = true;
-      break;
-    case 'timeout':
-      text = '定位超时，门店按默认顺序展示';
-      className = 'is-warn';
-      retry = true;
-      break;
-    case 'unavailable':
-      text = '无法获取位置，门店按默认顺序展示';
-      className = 'is-warn';
-      retry = true;
-      break;
-    case 'unsupported':
-      text = '当前浏览器不支持定位，门店按默认顺序展示';
-      className = 'is-warn';
-      break;
-    case 'insecure':
-      text = '当前页面未启用 HTTPS，无法定位，门店按默认顺序展示';
-      className = 'is-warn';
-      break;
-    default:
-      break;
-  }
-
-  els.locationText.textContent = text;
-  els.locationStatus.className = `location-status${className ? ` ${className}` : ''}`;
-  els.relocate.hidden = !retry;
-  els.locationStatus.hidden = false;
-}
-
-async function locate() {
-  if (state.locationState === 'locating') return;
-
-  state.locationState = 'locating';
-  updateLocationStatus();
-
-  try {
-    const position = await requestBrowserPosition({ timeout: 12000 });
-    if (!Number.isFinite(position.lat) || !Number.isFinite(position.lng)) {
-      throw new Error('invalid position');
-    }
-    state.origin = { lat: position.lat, lng: position.lng, source: 'browser' };
-    state.locationState = 'granted';
-  } catch (error) {
-    state.origin = null;
-    if (error?.code === 3) state.locationState = 'timeout';
-    else if (error?.code === 1) state.locationState = 'denied';
-    else state.locationState = 'unavailable';
-  }
-
-  renderStores();
-}
-
-function startLocation() {
-  const debug = parseDebugCoordinates(window.location.search);
-  if (debug) {
-    state.origin = debug;
-    state.locationState = 'debug';
-    renderStores();
-    return;
-  }
-
-  if (params.get('geo') === 'off') {
-    state.origin = null;
-    state.locationState = 'off';
-    renderStores();
-    return;
-  }
-
-  if (state.origin) {
-    renderStores();
-    return;
-  }
-
-  if (ERROR_STATES.has(state.locationState) && state.locationState !== 'granted') {
-    renderStores();
-    return;
-  }
-
-  if (!navigator.geolocation) {
-    state.locationState = 'unsupported';
-    renderStores();
-    return;
-  }
-
-  if (!isSecureLocationContext()) {
-    state.locationState = 'insecure';
-    renderStores();
-    return;
-  }
-
-  locate();
 }
 
 const hasOrderId = /^\d{10,25}$/.test(orderId);
-const prefersMock = wantsMock || !hasOrderId;
-
-function showMissingOrderId() {
-  showError(
-    '缺少提货订单号',
-    '请通过完整的礼品提货链接进入，或联系门店客服获取正确链接。',
-    { retry: false },
-  );
-}
 
 async function loadOrder() {
   if (orderId && !hasOrderId) {
@@ -443,8 +269,8 @@ async function loadOrder() {
   try {
     const query = new URLSearchParams();
     if (hasOrderId) query.set('orderId', orderId);
-    // 无订单号时展示默认礼品（仅当服务端开启 MOCK 演示数据）。
-    if (prefersMock) query.set('mock', '1');
+    // 无订单号时直接请求默认礼品，主链接即可展示 30/50/80 年陈年茅台。
+    if (wantsMock) query.set('mock', '1');
 
     const response = await fetch(`/api/gift?${query.toString()}`, {
       headers: { Accept: 'application/json' },
@@ -455,10 +281,6 @@ async function loadOrder() {
     if (token !== state.requestToken) return;
 
     if (!response.ok || !payload || payload.ok !== true || !payload.order) {
-      if (!hasOrderId && payload?.code === 'MOCK_DISABLED') {
-        showMissingOrderId();
-        return;
-      }
       showApiError(payload?.code || 'DEFAULT');
       return;
     }
@@ -472,7 +294,5 @@ async function loadOrder() {
 }
 
 els.retry.addEventListener('click', loadOrder);
-els.relocate.addEventListener('click', locate);
 
-startLocation();
 loadOrder();

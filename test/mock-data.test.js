@@ -12,12 +12,23 @@ test('mock 默认礼品为 53 度贵州茅台酒 15 年陈酿 500ml，数量 6',
   assert.equal(String(item.quantity), '6');
 });
 
-test('mock 门店包含设计稿四家门店', () => {
-  const names = mock.merchantInfos.map((store) => store.shopName);
-  assert.deepEqual(names, [
-    '榆林长兴路店',
-    '西安雁塔区提货点',
-    '西安雁塔区提货点',
-    '西安雁塔区配送点',
-  ]);
+test('mock 门店包含设计稿四家门店，并保持页面展示顺序', () => {
+  assert.deepEqual(
+    mock.merchantInfos.map((store) => store.id),
+    [
+      'mock-yulin-changxing',
+      'mock-xa-hanguang',
+      'mock-xa-cien',
+      'mock-xa-jinshuiwan',
+    ],
+  );
+  assert.deepEqual(
+    mock.merchantInfos.map((store) => store.shopName),
+    [
+      '榆林长兴路店',
+      '西安雁塔区配送点',
+      '西安雁塔区提货点',
+      '西安雁塔区提货点',
+    ],
+  );
 });

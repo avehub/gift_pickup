@@ -19,12 +19,12 @@
       "longitude": 109.760302
     },
     {
-      "id": "mock-xa-jinshuiwan",
-      "shopName": "西安雁塔区提货点",
-      "tel": "18509120290",
-      "address": "陕西省西安市雁塔区金水湾5幢商铺 中国茶叶 | 提货点",
-      "latitude": 34.195798,
-      "longitude": 108.993097
+      "id": "mock-xa-hanguang",
+      "shopName": "西安雁塔区配送点",
+      "tel": "15353885981",
+      "address": "陕西省西安市雁塔区含光路南段5号（188配送酒库）",
+      "latitude": 34.209005,
+      "longitude": 108.931993
     },
     {
       "id": "mock-xa-cien",
@@ -35,12 +35,12 @@
       "longitude": 108.96626
     },
     {
-      "id": "mock-xa-hanguang",
-      "shopName": "西安雁塔区配送点",
-      "tel": "15353885981",
-      "address": "陕西省西安市雁塔区含光路南段5号（188配送酒库）",
-      "latitude": 34.209005,
-      "longitude": 108.931993
+      "id": "mock-xa-jinshuiwan",
+      "shopName": "西安雁塔区提货点",
+      "tel": "18509120290",
+      "address": "陕西省西安市雁塔区金水湾5幢商铺 中国茶叶 | 提货点",
+      "latitude": 34.195798,
+      "longitude": 108.993097
     }
   ]
 }

@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "壹捌捌名酒汇 · 礼品提货 H5（定位距离排序 + 可配置门店）",
+  "description": "壹捌捌名酒汇 · 礼品提货 H5（门店按配置顺序展示 + 可配置门店）",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "deploy": "bash deploy/deploy.sh"
   }
 }

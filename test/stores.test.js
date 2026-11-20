@@ -92,6 +92,22 @@ test('replace 模式只返回 add 列表', () => {
   ]);
 });
 
+test('add 列表顺序即页面展示顺序', () => {
+  const config = parseStoreConfig({
+    mode: 'replace',
+    add: [
+      { id: 'c', name: 'C 店' },
+      { id: 'a', name: 'A 店' },
+      { id: 'b', name: 'B 店' },
+    ],
+  });
+  const result = applyStoreConfig(baseStores, config);
+  assert.deepEqual(
+    result.map((store) => store.id),
+    ['c', 'a', 'b'],
+  );
+});
+
 test('追加门店 id 冲突时跳过并告警', () => {
   const warnings = [];
   const config = parseStoreConfig({

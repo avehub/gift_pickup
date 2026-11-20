@@ -118,11 +118,14 @@ button {
 }
 
 .brand-sub {
+  --brand-sub-tracking: 3px;
   margin-top: 2px;
+  padding-left: var(--brand-sub-tracking);
   color: #5d463a;
   font-size: clamp(10.5px, 3.05vw, 12.5px);
-  letter-spacing: 3px;
+  letter-spacing: var(--brand-sub-tracking);
   line-height: 1.4;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -694,8 +697,8 @@ noscript .state-card {
   }
 
   .brand-sub {
+    --brand-sub-tracking: 1.8px;
     font-size: 9px;
-    letter-spacing: 1.8px;
   }
 
   .store-inner {
@@ -741,8 +744,8 @@ noscript .state-card {
   }
 
   .brand-sub {
+    --brand-sub-tracking: 1.5px;
     font-size: 8.5px;
-    letter-spacing: 1.5px;
   }
 
   .page-title {

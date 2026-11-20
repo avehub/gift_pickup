@@ -154,7 +154,7 @@ test('无订单号主链接返回默认四款茅台礼品', async () => {
     );
     assert.deepEqual(
       result.json.order.items.map((item) => item.quantity),
-      ['6', '', '', ''],
+      ['', '', '', ''],
     );
     assert.equal(result.json.order.stores.length, 3);
     assert.equal(result.json.order.stores[0].id === firstId, false);

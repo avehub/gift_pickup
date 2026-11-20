@@ -25,7 +25,7 @@ http://127.0.0.1:9001/
 http://127.0.0.1:9001/?orderId=9701090345282028477
 ```
 
-默认礼品维护在 `data/default-gift.json`，当前为 `53度贵州茅台酒15年陈酿500ml`（x6）、`53度贵州茅台酒30年陈年500ml`、`53度贵州茅台酒50年陈年500ml`、`52度贵州茅台酒80年陈年500ml`。默认 `config/stores.json` 使用 `replace` 模式，只展示设计稿给定的 4 家门店；未配置门店文件时使用默认礼品文件自带的 4 家门店兜底。
+默认礼品维护在 `data/default-gift.json`，当前为 `53度贵州茅台酒15年陈酿500ml`、`53度贵州茅台酒30年陈年500ml`、`53度贵州茅台酒50年陈年500ml`、`52度贵州茅台酒80年陈年500ml`。页面只展示礼品名称与年份角标，不展示数量。默认 `config/stores.json` 使用 `replace` 模式，只展示设计稿给定的 4 家门店；未配置门店文件时使用默认礼品文件自带的 4 家门店兜底。
 
 查看状态：
 
@@ -241,7 +241,7 @@ proxy_pass http://127.0.0.1:9001;
     "expiresAt": "",
     "sxStationName": null,
     "items": [
-      { "title": "53度贵州茅台酒15年陈酿500ml", "quantity": "6", "unitPrice": null },
+      { "title": "53度贵州茅台酒15年陈酿500ml", "quantity": "", "unitPrice": null },
       { "title": "53度贵州茅台酒30年陈年500ml", "quantity": "", "unitPrice": null },
       { "title": "53度贵州茅台酒50年陈年500ml", "quantity": "", "unitPrice": null },
       { "title": "52度贵州茅台酒80年陈年500ml", "quantity": "", "unitPrice": null }

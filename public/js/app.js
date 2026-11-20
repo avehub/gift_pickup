@@ -145,11 +145,7 @@ function renderOrder() {
       const copy = createElement('div', 'gift-copy');
       copy.append(createElement('div', 'gift-name', item.title || '礼品'));
 
-      const quantity = String(item.quantity ?? '').trim();
-      if (quantity) {
-        copy.append(createElement('div', 'gift-qty', `x${quantity}`));
-      }
-
+      // 所有礼品都不展示数量。
       row.append(figure, copy);
       els.giftItems.append(row);
     }

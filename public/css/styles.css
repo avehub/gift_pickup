@@ -320,15 +320,6 @@ button {
   overflow-wrap: anywhere;
 }
 
-.gift-qty {
-  margin-top: 8px;
-  color: #3a2921;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.4px;
-}
-
 .gift-empty {
   padding: 10px 2px;
   color: var(--muted);

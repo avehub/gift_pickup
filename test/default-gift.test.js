@@ -15,7 +15,10 @@ test('默认礼品保留 15 年，并包含 30 年、50 年、52 度 80 年陈�
       '52度贵州茅台酒80年陈年500ml',
     ],
   );
-  assert.equal(String(defaultGift.physicalCardOrderDetails[0].quantity), '6');
+  assert.equal(
+    defaultGift.physicalCardOrderDetails.some((item) => 'quantity' in item),
+    false,
+  );
 });
 
 test('默认礼品自带四家门店兜底，可被 config/stores.json 覆盖', () => {

@@ -82,12 +82,13 @@ button {
 
 .brand {
   --brand-logo-size: 64px;
+  --brand-name-size: calc(var(--brand-logo-size) * 0.72);
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: calc(var(--brand-logo-size) * 0.19);
 }
 
 .brand-logo {
@@ -99,33 +100,41 @@ button {
 }
 
 .brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   text-align: left;
 }
 
 .brand-name {
+  display: flex;
+  align-items: center;
   color: var(--ink);
-  font-size: clamp(31px, 9.4vw, 39px);
-  font-weight: 800;
-  line-height: var(--brand-logo-size);
-  letter-spacing: 2px;
+  font-family: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+  font-size: var(--brand-name-size);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
   white-space: nowrap;
+  -webkit-text-stroke: 0.028em currentColor;
 }
 
 .brand-bar {
-  margin: 0 1px;
-  color: #6b5144;
-  font-weight: 300;
+  flex: none;
+  width: calc(var(--brand-logo-size) * 0.023);
+  height: 0.98em;
+  margin: 0 0.2em;
+  border-radius: 1px;
+  background: currentColor;
 }
 
 .brand-sub {
-  --brand-sub-tracking: 3px;
-  margin-top: 2px;
-  padding-left: var(--brand-sub-tracking);
+  margin-top: calc(var(--brand-logo-size) * 0.105);
   color: #5d463a;
-  font-size: clamp(10.5px, 3.05vw, 12.5px);
-  letter-spacing: var(--brand-sub-tracking);
-  line-height: 1.4;
-  text-align: center;
+  font-size: calc(var(--brand-logo-size) * 0.19);
+  letter-spacing: 0.16em;
+  line-height: 1.1;
+  text-align: left;
   white-space: nowrap;
 }
 
@@ -692,15 +701,6 @@ noscript .state-card {
     --brand-logo-size: 48px;
   }
 
-  .brand-name {
-    font-size: 24px;
-  }
-
-  .brand-sub {
-    --brand-sub-tracking: 1.8px;
-    font-size: 9px;
-  }
-
   .store-inner {
     gap: 11px;
     padding: 12px 10px;
@@ -735,17 +735,6 @@ noscript .state-card {
 
   .brand {
     --brand-logo-size: 46px;
-    gap: 8px;
-  }
-
-  .brand-name {
-    font-size: 23px;
-    letter-spacing: 1px;
-  }
-
-  .brand-sub {
-    --brand-sub-tracking: 1.5px;
-    font-size: 8.5px;
   }
 
   .page-title {

@@ -146,10 +146,10 @@ test('无订单号主链接返回默认四款茅台礼品', async () => {
     assert.deepEqual(
       result.json.order.items.map((item) => item.title),
       [
+        '53度飞天茅台500ml',
         '53度贵州茅台酒15年陈酿500ml',
         '53度贵州茅台酒30年陈年500ml',
         '53度贵州茅台酒50年陈年500ml',
-        '52度贵州茅台酒80年陈年500ml',
       ],
     );
     assert.deepEqual(

@@ -1,6 +1,6 @@
 # 礼品提货 H5
 
-壹捌捌名酒汇「礼品提货」移动端页面：主链接直接展示 15 年、30 年、50 年、80 年贵州茅台酒与可提货门店；带订单号的链接仍按订单展示礼品。门店按配置的固定顺序展示，点击门店地址在当前页面打开腾讯地图，并默认定位到该门店。
+壹捌捌名酒汇「礼品提货」移动端页面：主链接直接展示飞天茅台、15 年、30 年、50 年贵州茅台酒与可提货门店；带订单号的链接仍按订单展示礼品。门店按配置的固定顺序展示，点击门店地址在当前页面打开腾讯地图，并默认定位到该门店。
 
 - 零依赖 Node.js 22 服务 + 原生 HTML/CSS/ES Module，无需前端构建。
 - 同源代理上游订单接口，避免浏览器 CORS；页面不请求浏览器定位，门店顺序由服务端下发。
@@ -13,7 +13,7 @@
 docker compose up -d --build
 ```
 
-默认映射到本机 `127.0.0.1:9001`。主链接不需要 `orderId`，直接打开即展示默认礼品（15/30/50/80 年茅台），`MOCK` 开关不影响：
+默认映射到本机 `127.0.0.1:9001`。主链接不需要 `orderId`，直接打开即展示默认礼品（飞天茅台 + 15/30/50 年茅台），`MOCK` 开关不影响：
 
 ```text
 http://127.0.0.1:9001/
@@ -25,7 +25,7 @@ http://127.0.0.1:9001/
 http://127.0.0.1:9001/?orderId=9701090345282028477
 ```
 
-默认礼品维护在 `data/default-gift.json`，当前为 `53度贵州茅台酒15年陈酿500ml`、`53度贵州茅台酒30年陈年500ml`、`53度贵州茅台酒50年陈年500ml`、`52度贵州茅台酒80年陈年500ml`。页面只展示礼品名称与年份角标，不展示数量。默认 `config/stores.json` 使用 `replace` 模式，只展示设计稿给定的 4 家门店；未配置门店文件时使用默认礼品文件自带的 4 家门店兜底。
+默认礼品维护在 `data/default-gift.json`，当前为 `53度飞天茅台500ml`、`53度贵州茅台酒15年陈酿500ml`、`53度贵州茅台酒30年陈年500ml`、`53度贵州茅台酒50年陈年500ml`。页面只展示礼品名称与年份角标，不展示数量。默认 `config/stores.json` 使用 `replace` 模式，只展示设计稿给定的 4 家门店；未配置门店文件时使用默认礼品文件自带的 4 家门店兜底。
 
 查看状态：
 
@@ -231,7 +231,7 @@ proxy_pass http://127.0.0.1:9001;
 
 ### `GET /api/gift`
 
-不带 `orderId` 时返回 `data/default-gift.json` 中的默认礼品（15/30/50/80 年茅台），主链接即调用该接口：
+不带 `orderId` 时返回 `data/default-gift.json` 中的默认礼品（飞天茅台 + 15/30/50 年茅台），主链接即调用该接口：
 
 ```json
 {
@@ -241,10 +241,10 @@ proxy_pass http://127.0.0.1:9001;
     "expiresAt": "",
     "sxStationName": null,
     "items": [
+      { "title": "53度飞天茅台500ml", "quantity": "", "unitPrice": null },
       { "title": "53度贵州茅台酒15年陈酿500ml", "quantity": "", "unitPrice": null },
       { "title": "53度贵州茅台酒30年陈年500ml", "quantity": "", "unitPrice": null },
-      { "title": "53度贵州茅台酒50年陈年500ml", "quantity": "", "unitPrice": null },
-      { "title": "52度贵州茅台酒80年陈年500ml", "quantity": "", "unitPrice": null }
+      { "title": "53度贵州茅台酒50年陈年500ml", "quantity": "", "unitPrice": null }
     ],
     "stores": [
       {
@@ -317,7 +317,7 @@ src/normalize.js          上游订单 → 前端订单
 src/stores.js             门店增删改规则与热加载
 src/upstream.js           上游 POST、故障转移、超时
 public/                   页面、样式、前端模块、图片资产
-data/default-gift.json    主链接默认礼品（15/30/50/80 年茅台 + 门店兜底）
+data/default-gift.json    主链接默认礼品（飞天 + 15/30/50 年茅台 + 门店兜底）
 data/mock-gift.json       演示订单（mock=1 + orderId，4 家门店）
 config/stores.json        默认门店配置（replace，4 家设计门店）
 config/stores.example.json 门店配置模板

@@ -2,6 +2,9 @@
   "sxStationName": null,
   "physicalCardOrderDetails": [
     {
+      "itemTitle": "53度飞天茅台500ml"
+    },
+    {
       "itemTitle": "53度贵州茅台酒15年陈酿500ml"
     },
     {
@@ -9,9 +12,6 @@
     },
     {
       "itemTitle": "53度贵州茅台酒50年陈年500ml"
-    },
-    {
-      "itemTitle": "52度贵州茅台酒80年陈年500ml"
     }
   ],
   "merchantInfos": [

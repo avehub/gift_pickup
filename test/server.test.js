@@ -79,7 +79,7 @@ test('健康检查与静态首页注入配置', async () => {
     assert.match(index.response.headers.get('content-type'), /text\/html/);
     assert.match(index.text, /name="map-referer" content="ref-test"/);
     assert.match(index.text, /rel="canonical" href="https:\/\/gift\.example\.com\/"/);
-    assert.match(index.text, /飞天茅台提货/);
+    assert.match(index.text, /礼品提货/);
 
     const csp = index.response.headers.get('content-security-policy');
     assert.match(csp, /default-src 'self'/);
